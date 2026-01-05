@@ -1,0 +1,6 @@
+<div class="error-page">
+      <h2>Error {{ status }}</h2>
+      <p>{{ message }}</p>
+      <p *ngIf="path">Path: {{ path }}</p>
+      <a routerLink="/">Go back to home</a>
+    </div>

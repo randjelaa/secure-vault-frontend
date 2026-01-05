@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { AuthService } from '../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
 import QRCode from 'qrcode';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -27,7 +28,8 @@ export class LoginComponent {
 
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {
     this.loginForm = this.fb.group({
       username: ['', Validators.required],
@@ -64,17 +66,24 @@ export class LoginComponent {
     this.error = null;
 
     this.authService.loginMfa({
-      username: this.loginForm.value.username,
-      code: this.mfaForm.value.code
-    }).subscribe({
-      next: (res) => {
-        localStorage.setItem('accessToken', res.token);
-        console.log('LOGIN SUCCESS');
-      },
-      error: () => {
-        this.error = 'Invalid MFA code';
-      }
-    });
+        username: this.loginForm.value.username,
+        code: this.mfaForm.value.code
+      }).subscribe({
+        next: (res) => {
+          localStorage.setItem('accessToken', res.token);
+
+          // primjer: redirect prema ulozi admin
+          const payload = JSON.parse(atob(res.token.split('.')[1]));
+          if (payload.role === 'ADMIN') {
+            this.router.navigate(['/admin']);
+          } else {
+            this.router.navigate(['/']); // fallback
+          }
+        },
+        error: () => {
+          this.error = 'Invalid MFA code';
+        }
+      });
   }
 
   private async generateQrCode(): Promise<void> {
