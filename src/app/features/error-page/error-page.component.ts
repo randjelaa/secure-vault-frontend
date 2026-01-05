@@ -1,17 +1,26 @@
-import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-error-page',
   standalone: true,
-  imports: [CommonModule, RouterModule],
   templateUrl: './error-page.component.html',
   styleUrl: './error-page.component.css'
 })
-
 export class ErrorPageComponent {
-  @Input() status: number | string = 'Unknown';
-  @Input() message: string = 'Something went wrong';
-  @Input() path?: string;
+
+  status: number | string = 'Unknown';
+  message: string = 'Something went wrong';
+  path?: string;
+
+  constructor(private router: Router) {
+    const navigation = this.router.getCurrentNavigation();
+    const state = navigation?.extras.state as any;
+
+    if (state) {
+      this.status = state.status ?? this.status;
+      this.message = state.message ?? this.message;
+      this.path = state.path;
+    }
+  }
 }

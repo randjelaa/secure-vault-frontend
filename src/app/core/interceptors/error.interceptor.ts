@@ -1,24 +1,30 @@
-import { Injectable } from '@angular/core';
-import { HttpInterceptor, HttpRequest, HttpHandler, HttpErrorResponse } from '@angular/common/http';
-import { catchError, throwError } from 'rxjs';
+import { inject } from '@angular/core';
+import {
+  HttpInterceptorFn,
+  HttpErrorResponse
+} from '@angular/common/http';
 import { Router } from '@angular/router';
+import { catchError, throwError } from 'rxjs';
 
-@Injectable()
-export class ErrorInterceptor implements HttpInterceptor {
+export const errorInterceptor: HttpInterceptorFn = (req, next) => {
+  const router = inject(Router);
 
-  constructor(private router: Router) {}
+  return next(req).pipe(
+    catchError((err: HttpErrorResponse) => {
+      const isAuth = req.url.includes('/auth/');
+      const is401 = err.status === 401;
 
-  intercept(req: HttpRequest<any>, next: HttpHandler) {
-    return next.handle(req).pipe(
-      catchError((err: HttpErrorResponse) => {
-        // Svi ostali errori osim 401 idu na error page
-        if (err.status !== 401) {
-          this.router.navigate(['/error'], {
-            state: { status: err.status, message: err.error?.message, path: req.url }
-          });
-        }
-        return throwError(() => err);
-      })
-    );
-  }
-}
+      if (!is401 && !isAuth) {
+        router.navigate(['/error'], {
+          state: {
+            status: err.status,
+            message: err.error?.message || 'Unexpected error',
+            path: req.url
+          }
+        });
+      }
+
+      return throwError(() => err);
+    })
+  );
+};
