@@ -1,0 +1,51 @@
+<h2>Secure Vault Login</h2>
+
+@if (error) {
+  <div class="error">
+    {{ error }}
+  </div>
+}
+
+@if (step === 'PASSWORD') {
+  <form [formGroup]="loginForm" (ngSubmit)="submitPassword()">
+
+    <input
+      type="text"
+      placeholder="Username"
+      formControlName="username"
+    />
+
+    <input
+      type="password"
+      placeholder="Password"
+      formControlName="password"
+    />
+
+    <button type="submit" [disabled]="loginForm.invalid">
+      Next
+    </button>
+  </form>
+}
+
+@if (step === 'MFA') {
+
+  @if (qrCodeImage) {
+    <div class="qr">
+      <p>Scan QR code with Google Authenticator</p>
+      <img [src]="qrCodeImage" alt="MFA QR Code">
+    </div>
+  }
+
+  <form [formGroup]="mfaForm" (ngSubmit)="submitMfa()">
+    <input
+      type="text"
+      placeholder="MFA Code"
+      formControlName="code"
+    />
+
+    <button type="submit" [disabled]="mfaForm.invalid">
+      Login
+    </button>
+  </form>
+}
+
