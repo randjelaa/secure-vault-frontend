@@ -45,4 +45,15 @@ export class AuthService {
       { withCredentials: true }
     );
   }
+
+  loginWithGoogle(idToken: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(
+      `${this.API}/login/oidc`,
+      {
+        provider: 'GOOGLE',
+        idToken
+      },
+      { withCredentials: true }
+    );
+  }
 }

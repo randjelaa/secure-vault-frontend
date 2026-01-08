@@ -5,6 +5,8 @@ import { CommonModule } from '@angular/common';
 import QRCode from 'qrcode';
 import { Router } from '@angular/router';
 
+declare const google: any;
+
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -12,6 +14,7 @@ import { Router } from '@angular/router';
   templateUrl: './login.component.html'
 })
 export class LoginComponent {
+  private readonly GOOGLE_CLIENT_ID ='448986711630-6i1hul9kt6l3a2quiesl0n5bui6mej13.apps.googleusercontent.com';
 
   step: 'PASSWORD' | 'MFA' = 'PASSWORD';
 
@@ -90,5 +93,41 @@ export class LoginComponent {
     if (!this.otpAuthUrl) return;
 
     this.qrCodeImage = await QRCode.toDataURL(this.otpAuthUrl);
+  }
+
+  loginWithGoogle(): void {
+    this.error = null;
+
+    google.accounts.id.initialize({
+      client_id: this.GOOGLE_CLIENT_ID,
+      callback: (response: any) => {
+        this.handleGoogleCredential(response.credential);
+      }
+    });
+
+    google.accounts.id.prompt(); 
+  }
+
+  private handleGoogleCredential(idToken: string): void {
+    this.authService.loginWithGoogle(idToken).subscribe({
+      next: (res) => {
+        localStorage.setItem('accessToken', res.token);
+
+        const payload = JSON.parse(atob(res.token.split('.')[1]));
+
+        if (payload.role === 'ADMIN') {
+          this.router.navigate(['/admin']);
+        } else {
+          this.router.navigate(['/']);
+        }
+      },
+      error: (err) => {
+        if (err.status === 403) {
+          this.error = 'Account pending admin approval';
+        } else {
+          this.error = 'Google login failed';
+        }
+      }
+    });
   }
 }
