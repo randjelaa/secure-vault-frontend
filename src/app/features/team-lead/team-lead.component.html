@@ -1,1 +1,23 @@
 <p>team-lead works!</p>
+
+@if (needsVaultSetup) {
+  <div class="vault-setup">
+    <h3>Initialize Vault</h3>
+
+    <input
+      type="password"
+      placeholder="Master password"
+      [(ngModel)]="masterPassword"
+    />
+
+    <button (click)="createVault()">
+      Create Vault
+    </button>
+  </div>
+} @else {
+  <div>
+    <p>Vault ready ✔</p>
+  </div>
+  <a routerLink="/vault">Open Vault</a>
+}
+

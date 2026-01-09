@@ -6,6 +6,7 @@ import { authGuard } from './core/interceptors/auth.guard';
 import { VaultComponent } from './features/vault/vault.component';
 import { TeamLeadComponent } from './features/team-lead/team-lead.component';
 import { DeveloperComponent } from './features/developer/developer.component';
+import { LogoutComponent } from './features/logout/logout.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -29,6 +30,7 @@ export const routes: Routes = [
     component: VaultComponent,
     canActivate: [authGuard] 
   },
+  { path: 'logout', component: LogoutComponent },
   { path: 'error', component: ErrorPageComponent },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: '**', redirectTo: 'error' }

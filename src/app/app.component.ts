@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { VaultStateService } from './core/services/vault-state.service';
 
 @Component({
   selector: 'app-root',
@@ -10,4 +11,11 @@ import { RouterOutlet } from '@angular/router';
 })
 export class AppComponent {
   title = 'secure-vault-frontend';
+
+  constructor(private vaultState: VaultStateService) {
+    // Zaključavanje vaulta na refresh / tab close
+    window.addEventListener('beforeunload', () => {
+      this.vaultState.lock();
+    });
+  }
 }
