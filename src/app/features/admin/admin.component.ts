@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CryptoService } from '../../core/services/crypto.service';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, RouterModule],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.css'
 })

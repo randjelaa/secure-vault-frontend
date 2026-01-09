@@ -1,0 +1,39 @@
+<h2>Vault</h2>
+
+<div *ngIf="!unlocked">
+  <input
+    type="password"
+    placeholder="Master password"
+    [(ngModel)]="masterPassword"
+  />
+  <button (click)="unlockVault()">Unlock Vault</button>
+</div>
+
+<div *ngIf="unlocked">
+
+  <h3>Create secret</h3>
+  <input placeholder="Name" [(ngModel)]="newName" />
+  <input placeholder="Value" [(ngModel)]="newValue" />
+  <button (click)="createSecret()">Save</button>
+
+  <hr />
+
+  <h3>Your secrets</h3>
+
+  <div *ngFor="let s of secrets">
+    <strong>{{ s.name }}</strong>
+
+    <button (click)="decrypt(s)">Decrypt</button>
+    <button (click)="delete(s.id)">Delete</button>
+
+    <!-- Kad je dekriptovano -->
+    <div *ngIf="decrypted[s.id] !== undefined">
+      <input
+        [(ngModel)]="decrypted[s.id]"
+        placeholder="Edit secret value"
+      />
+      <button (click)="updateSecret(s)">Update</button>
+    </div>
+  </div>
+
+</div>

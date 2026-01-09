@@ -115,6 +115,49 @@ export class CryptoService {
   }
 
   // ======================
+  // SECRET ENCRYPT / DECRYPT
+  // ======================
+
+  async encryptSecret(
+    dek: CryptoKey,
+    plaintext: string
+  ): Promise<{ encryptedBlob: string; iv: string }> {
+
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const data = new TextEncoder().encode(plaintext);
+
+    const encrypted = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv: this.toArrayBuffer(iv) },
+      dek,
+      data
+    );
+
+    return {
+      encryptedBlob: this.toBase64(encrypted),
+      iv: this.toBase64(iv)
+    };
+  }
+
+  async decryptSecret(
+    dek: CryptoKey,
+    encryptedBlob: string,
+    iv: string
+  ): Promise<string> {
+
+    const decrypted = await crypto.subtle.decrypt(
+      {
+        name: 'AES-GCM',
+        iv: this.toArrayBuffer(this.fromBase64(iv))
+      },
+      dek,
+      this.toArrayBuffer(this.fromBase64(encryptedBlob))
+    );
+
+    return new TextDecoder().decode(decrypted);
+  }
+
+
+  // ======================
   // helpers
   // ======================
 
