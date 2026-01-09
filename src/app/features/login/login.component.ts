@@ -79,8 +79,12 @@ export class LoginComponent {
           const payload = JSON.parse(atob(res.token.split('.')[1]));
           if (payload.role === 'ADMIN') {
             this.router.navigate(['/admin']);
+          } else if (payload.role === 'TEAM_LEAD') {
+            this.router.navigate(['/team-lead'])
+          } else if (payload.role === 'DEVELOPER') {
+            this.router.navigate(['/developer'])
           } else {
-            this.router.navigate(['/']); // fallback
+            this.router.navigate(['/']);
           }
         },
         error: () => {
@@ -117,6 +121,10 @@ export class LoginComponent {
 
         if (payload.role === 'ADMIN') {
           this.router.navigate(['/admin']);
+        } else if (payload.role === 'TEAM_LEAD') {
+          this.router.navigate(['/team-lead'])
+        } else if (payload.role === 'DEVELOPER') {
+          this.router.navigate(['/developer'])
         } else {
           this.router.navigate(['/']);
         }

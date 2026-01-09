@@ -4,6 +4,8 @@ import { AdminComponent } from './features/admin/admin.component';
 import { ErrorPageComponent } from './features/error-page/error-page.component';
 import { authGuard } from './core/interceptors/auth.guard';
 import { VaultComponent } from './features/vault/vault.component';
+import { TeamLeadComponent } from './features/team-lead/team-lead.component';
+import { DeveloperComponent } from './features/developer/developer.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -12,7 +14,21 @@ export const routes: Routes = [
     component: AdminComponent,
     canActivate: [authGuard]
   },
-  { path: 'vault', component: VaultComponent },
+  {
+    path: 'team-lead',
+    component: TeamLeadComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'developer',
+    component: DeveloperComponent,
+    canActivate: [authGuard]
+  },
+  { 
+    path: 'vault', 
+    component: VaultComponent,
+    canActivate: [authGuard] 
+  },
   { path: 'error', component: ErrorPageComponent },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: '**', redirectTo: 'error' }
