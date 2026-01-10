@@ -119,19 +119,38 @@ export class LoginComponent {
 
         const payload = JSON.parse(atob(res.token.split('.')[1]));
 
-        if (payload.role === 'ADMIN') {
-          this.router.navigate(['/admin']);
-        } else if (payload.role === 'TEAM_LEAD') {
-          this.router.navigate(['/team-lead'])
-        } else if (payload.role === 'DEVELOPER') {
-          this.router.navigate(['/developer'])
-        } else {
-          this.router.navigate(['/']);
+        switch (payload.role) {
+          case 'ADMIN':
+            this.router.navigate(['/admin']);
+            break;
+          case 'TEAM_LEAD':
+            this.router.navigate(['/team-lead']);
+            break;
+          case 'DEVELOPER':
+            this.router.navigate(['/developer']);
+            break;
+          default:
+            this.router.navigate(['/']);
         }
       },
       error: (err) => {
         if (err.status === 403) {
-          this.error = 'Account pending admin approval';
+
+          const message = err.error?.message;
+
+          if (message === 'ROLE_SELECTION_REQUIRED') {
+            this.router.navigate(['/select-role'], {
+              state: { idToken }
+            });
+            return;
+          }
+
+          if (message === 'ACCOUNT_PENDING_APPROVAL') {
+            this.router.navigate(['/pending-approval']);
+            return;
+          }
+
+          this.error = 'Access forbidden';
         } else {
           this.error = 'Google login failed';
         }

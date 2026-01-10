@@ -7,6 +7,8 @@ import { VaultComponent } from './features/vault/vault.component';
 import { TeamLeadComponent } from './features/team-lead/team-lead.component';
 import { DeveloperComponent } from './features/developer/developer.component';
 import { LogoutComponent } from './features/logout/logout.component';
+import { SelectRoleComponent } from './features/select-role/select-role.component';
+import { PendingApprovalComponent } from './features/pending-approval/pending-approval.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -29,6 +31,14 @@ export const routes: Routes = [
     path: 'vault', 
     component: VaultComponent,
     canActivate: [authGuard] 
+  },
+  {
+    path: 'select-role',
+    component: SelectRoleComponent
+  },
+  {
+    path: 'pending-approval',
+    component: PendingApprovalComponent
   },
   { path: 'logout', component: LogoutComponent },
   { path: 'error', component: ErrorPageComponent },

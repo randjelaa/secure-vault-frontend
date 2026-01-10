@@ -1,1 +1,24 @@
-<p>developer works!</p>
+<h2>Developer Dashboard</h2>
+
+@if (needsVaultSetup) {
+  <div class="vault-setup">
+    <h3>Initialize Vault</h3>
+
+    <input
+      type="password"
+      placeholder="Master password"
+      [(ngModel)]="masterPassword"
+    />
+
+    <button (click)="createVault()">
+      Create Vault
+    </button>
+  </div>
+} @else {
+  <div>
+    <p>Vault ready ✔</p>
+  </div>
+  <a routerLink="/vault">Open Vault</a>
+}
+
+<app-logout></app-logout>
