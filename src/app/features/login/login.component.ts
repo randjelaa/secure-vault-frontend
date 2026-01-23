@@ -104,6 +104,8 @@ export class LoginComponent {
 
     google.accounts.id.initialize({
       client_id: this.GOOGLE_CLIENT_ID,
+      ux_mode: 'popup',
+      use_fedcm_for_prompt: false,
       callback: (response: any) => {
         this.handleGoogleCredential(response.credential);
       }
