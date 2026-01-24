@@ -3,11 +3,12 @@ import { CryptoService } from '../../core/services/crypto.service';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { LogoutComponent } from "../logout/logout.component";
+import { VaultComponent } from '../vault/vault.component';
 
 @Component({
   selector: 'app-team-lead',
   standalone: true,
-  imports: [FormsModule, RouterModule, LogoutComponent],
+  imports: [FormsModule, RouterModule, LogoutComponent, VaultComponent],
   templateUrl: './team-lead.component.html',
   styleUrl: './team-lead.component.css'
 })

@@ -3,11 +3,12 @@ import { CryptoService } from '../../core/services/crypto.service';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { LogoutComponent } from '../logout/logout.component';
+import { VaultComponent } from '../vault/vault.component';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [FormsModule, RouterModule, LogoutComponent],
+  imports: [FormsModule, RouterModule, LogoutComponent, VaultComponent],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.css'
 })

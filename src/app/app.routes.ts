@@ -28,11 +28,6 @@ export const routes: Routes = [
     component: DeveloperComponent,
     canActivate: [authGuard]
   },
-  { 
-    path: 'vault', 
-    component: VaultComponent,
-    canActivate: [authGuard] 
-  },
   {
     path: 'select-role',
     component: SelectRoleComponent

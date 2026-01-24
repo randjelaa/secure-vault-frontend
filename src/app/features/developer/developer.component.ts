@@ -3,11 +3,12 @@ import { LogoutComponent } from '../logout/logout.component';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { CryptoService } from '../../core/services/crypto.service';
+import { VaultComponent } from '../vault/vault.component';
 
 @Component({
   selector: 'app-developer',
   standalone: true,
-  imports: [FormsModule, RouterModule, LogoutComponent],
+  imports: [FormsModule, RouterModule, LogoutComponent, VaultComponent],
   templateUrl: './developer.component.html',
   styleUrl: './developer.component.css'
 })
