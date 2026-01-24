@@ -2,12 +2,9 @@
 
 <p>Please choose your role to continue:</p>
 
-<button (click)="selectRole('TEAM_LEAD')" [disabled]="loading">
-  Team Lead
-</button>
+<button (click)="selectRole('TEAM_LEAD')" [disabled]="loading">Team Lead</button>
+<button (click)="selectRole('DEVELOPER')" [disabled]="loading">Developer</button>
 
-<button (click)="selectRole('DEVELOPER')" [disabled]="loading">
-  Developer
-</button>
-
-<p *ngIf="error" style="color:red">{{ error }}</p>
+@if (error) {
+  <p style="color:red">{{ error }}</p>
+}

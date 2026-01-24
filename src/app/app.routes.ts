@@ -3,7 +3,6 @@ import { LoginComponent } from './features/login/login.component';
 import { AdminComponent } from './features/admin/admin.component';
 import { ErrorPageComponent } from './features/error-page/error-page.component';
 import { authGuard } from './core/interceptors/auth.guard';
-import { VaultComponent } from './features/vault/vault.component';
 import { TeamLeadComponent } from './features/team-lead/team-lead.component';
 import { DeveloperComponent } from './features/developer/developer.component';
 import { LogoutComponent } from './features/logout/logout.component';
@@ -13,32 +12,17 @@ import { RateLimitPageComponent } from './features/rate-limit-page/rate-limit-pa
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
-  {
-    path: 'admin',
-    component: AdminComponent,
-    canActivate: [authGuard]
-  },
-  {
-    path: 'team-lead',
-    component: TeamLeadComponent,
-    canActivate: [authGuard]
-  },
-  {
-    path: 'developer',
-    component: DeveloperComponent,
-    canActivate: [authGuard]
-  },
-  {
-    path: 'select-role',
-    component: SelectRoleComponent
-  },
-  {
-    path: 'pending-approval',
-    component: PendingApprovalComponent
-  },
+  { path: 'select-role', component: SelectRoleComponent },
+  { path: 'pending-approval', component: PendingApprovalComponent },
   { path: 'logout', component: LogoutComponent },
+
+  { path: 'admin', component: AdminComponent, canActivate: [authGuard] },
+  { path: 'team-lead', component: TeamLeadComponent, canActivate: [authGuard] },
+  { path: 'developer', component: DeveloperComponent, canActivate: [authGuard] },
+
   { path: 'error', component: ErrorPageComponent },
   { path: 'rate-limit-page', component: RateLimitPageComponent },
+  
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: '**', redirectTo: 'error' }
 ];

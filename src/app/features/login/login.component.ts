@@ -14,20 +14,15 @@ declare const google: any;
   templateUrl: './login.component.html'
 })
 export class LoginComponent {
-  private readonly GOOGLE_CLIENT_ID ='448986711630-6i1hul9kt6l3a2quiesl0n5bui6mej13.apps.googleusercontent.com';
+  private readonly GOOGLE_CLIENT_ID = '448986711630-6i1hul9kt6l3a2quiesl0n5bui6mej13.apps.googleusercontent.com';
 
   step: 'PASSWORD' | 'MFA' = 'PASSWORD';
+  error: string | null = null;
+  otpAuthUrl: string | null = null;
+  qrCodeImage: string | null = null;
 
   loginForm: FormGroup;
   mfaForm: FormGroup;
-
-  /** OTP URI koji dolazi sa backend-a (otpauth://...) */
-  otpAuthUrl: string | null = null;
-
-  /** Prava slika (base64) za <img> */
-  qrCodeImage: string | null = null;
-
-  error: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -57,9 +52,7 @@ export class LoginComponent {
           this.step = 'MFA';
         }
       },
-      error: () => {
-        this.error = 'Invalid username or password';
-      }
+      error: () => this.error = 'Invalid username or password'
     });
   }
 
@@ -69,94 +62,72 @@ export class LoginComponent {
     this.error = null;
 
     this.authService.loginMfa({
-        username: this.loginForm.value.username,
-        code: this.mfaForm.value.code
-      }).subscribe({
-        next: (res) => {
-          localStorage.setItem('accessToken', res.token);
-
-          // primjer: redirect prema ulozi admin
-          const payload = JSON.parse(atob(res.token.split('.')[1]));
-          if (payload.role === 'ADMIN') {
-            this.router.navigate(['/admin']);
-          } else if (payload.role === 'TEAM_LEAD') {
-            this.router.navigate(['/team-lead'])
-          } else if (payload.role === 'DEVELOPER') {
-            this.router.navigate(['/developer'])
-          } else {
-            this.router.navigate(['/']);
-          }
-        },
-        error: () => {
-          this.error = 'Invalid MFA code';
-        }
-      });
+      username: this.loginForm.value.username,
+      code: this.mfaForm.value.code
+    }).subscribe({
+      next: (res) => this.handleSuccessfulLogin(res.token),
+      error: () => this.error = 'Invalid MFA code'
+    });
   }
 
   private async generateQrCode(): Promise<void> {
     if (!this.otpAuthUrl) return;
-
     this.qrCodeImage = await QRCode.toDataURL(this.otpAuthUrl);
   }
 
   loginWithGoogle(): void {
-    this.error = null;
+  this.error = null;
 
+  if (google && google.accounts && google.accounts.id) {
+    google.accounts.id.cancel();
     google.accounts.id.initialize({
       client_id: this.GOOGLE_CLIENT_ID,
       ux_mode: 'popup',
       use_fedcm_for_prompt: false,
-      callback: (response: any) => {
-        this.handleGoogleCredential(response.credential);
-      }
+      callback: (response: any) => this.handleGoogleCredential(response.credential)
     });
 
-    google.accounts.id.prompt(); 
+    google.accounts.id.prompt();
   }
+}
+
 
   private handleGoogleCredential(idToken: string): void {
     this.authService.loginWithGoogle(idToken).subscribe({
-      next: (res) => {
-        localStorage.setItem('accessToken', res.token);
-
-        const payload = JSON.parse(atob(res.token.split('.')[1]));
-
-        switch (payload.role) {
-          case 'ADMIN':
-            this.router.navigate(['/admin']);
-            break;
-          case 'TEAM_LEAD':
-            this.router.navigate(['/team-lead']);
-            break;
-          case 'DEVELOPER':
-            this.router.navigate(['/developer']);
-            break;
-          default:
-            this.router.navigate(['/']);
-        }
-      },
-      error: (err) => {
-        if (err.status === 403) {
-
-          const message = err.error?.message;
-
-          if (message === 'ROLE_SELECTION_REQUIRED') {
-            this.router.navigate(['/select-role'], {
-              state: { idToken }
-            });
-            return;
-          }
-
-          if (message === 'ACCOUNT_PENDING_APPROVAL') {
-            this.router.navigate(['/pending-approval']);
-            return;
-          }
-
-          this.error = 'Access forbidden';
-        } else {
-          this.error = 'Google login failed';
-        }
-      }
+      next: (res) => this.handleSuccessfulLogin(res.token),
+      error: (err) => this.handleGoogleError(err, idToken)
     });
+  }
+
+  // HANDLERS
+  private handleSuccessfulLogin(token: string): void {
+    localStorage.setItem('accessToken', token);
+
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    switch (payload.role) {
+      case 'ADMIN': this.router.navigate(['/admin']); break;
+      case 'TEAM_LEAD': this.router.navigate(['/team-lead']); break;
+      case 'DEVELOPER': this.router.navigate(['/developer']); break;
+      default: this.router.navigate(['/']); break;
+    }
+  }
+
+  private handleGoogleError(err: any, idToken: string): void {
+    if (err.status === 403) {
+      const message = err.error?.message;
+
+      if (message === 'ROLE_SELECTION_REQUIRED') {
+        this.router.navigate(['/select-role'], { state: { idToken } });
+        return;
+      }
+      if (message === 'ACCOUNT_PENDING_APPROVAL') {
+        this.router.navigate(['/pending-approval']);
+        return;
+      }
+
+      this.error = 'Access forbidden';
+    } else {
+      this.error = 'Google login failed';
+    }
   }
 }

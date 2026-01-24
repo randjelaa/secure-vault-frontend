@@ -74,12 +74,11 @@ export class CryptoService {
       rawDek
     );
 
-    // ✅ per-user storage
     localStorage.setItem(this.key(this.VAULT_KEY), this.toBase64(encryptedDek));
     localStorage.setItem(this.key(this.VAULT_SALT), this.toBase64(salt));
     localStorage.setItem(this.key(this.VAULT_IV), this.toBase64(iv));
 
-    this.vaultState.dek = dek; // DEK u RAM-u
+    this.vaultState.dek = dek; // RAM
   }
 
   async unlockVault(masterPassword: string): Promise<CryptoKey> {
@@ -107,9 +106,7 @@ export class CryptoService {
     return dek;
   }
 
-  // ======================
-  // SECRET ENCRYPT / DECRYPT
-  // ======================
+  // SECRETS
   async encryptSecret(dek: CryptoKey, plaintext: string): Promise<{ encryptedBlob: string; iv: string }> {
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const data = new TextEncoder().encode(plaintext);
@@ -130,9 +127,7 @@ export class CryptoService {
     return new TextDecoder().decode(decrypted);
   }
 
-  // ======================
-  // helpers
-  // ======================
+  // HELPERS
   private toArrayBuffer(data: Uint8Array): ArrayBuffer {
     const buffer = new ArrayBuffer(data.byteLength);
     new Uint8Array(buffer).set(data);

@@ -13,7 +13,6 @@ export class AppComponent {
   title = 'secure-vault-frontend';
 
   constructor(private vaultState: VaultStateService) {
-    // Zaključavanje vaulta na refresh / tab close
     window.addEventListener('beforeunload', () => {
       this.vaultState.lock();
     });

@@ -9,12 +9,10 @@ export const authGuard: CanActivateFn = () => {
 
   const accessToken = localStorage.getItem('accessToken');
 
-  // 1️⃣ Ako već ima access token → pusti
   if (accessToken) {
     return true;
   }
 
-  // 2️⃣ Nema tokena → pokušaj refresh
   return authService.refresh().pipe(
     map(res => {
       if (res?.token) {

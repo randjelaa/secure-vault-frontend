@@ -11,15 +11,12 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       const isAuth = req.url.includes('/auth/');
       const status = err.status;
 
-      // Ignore expected auth errors za auth rute (401/403)
       const shouldIgnore = isAuth && (status === 401 || status === 403);
 
       if (!shouldIgnore) {
         if (status === 429) {
-          // Posebna stranica za rate limit
           router.navigate(['/rate-limit-page'], { replaceUrl: true });
         } else {
-          // Sve ostale greške idu na standardnu error page
           router.navigate(['/error'], {
             state: {
               status,

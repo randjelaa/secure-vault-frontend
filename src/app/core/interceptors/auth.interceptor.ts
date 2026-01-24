@@ -1,15 +1,11 @@
 import { inject } from '@angular/core';
-import {
-  HttpInterceptorFn,
-  HttpErrorResponse
-} from '@angular/common/http';
+import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../services/auth.service';
 import { catchError, switchMap, throwError } from 'rxjs';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
 
-  // Preskoči auth rute
   if (req.url.includes('/auth/')) {
     return next(req);
   }

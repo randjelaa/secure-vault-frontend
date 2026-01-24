@@ -32,8 +32,10 @@ export class AuthService {
     return this.http.post<void>(`${this.API}/logout`, {}, { withCredentials: true }).pipe(
       tap(() => {
         localStorage.removeItem('accessToken');
-        this.vaultState.lock(); // 🔐 zaključaj vault u memoriji
-        this.router.navigate(['/login']);
+        this.vaultState.lock(); 
+        this.router.navigateByUrl('/login', { replaceUrl: true }).then(() => {
+          window.location.reload(); //todo: testing
+        });
       })
     );
   }

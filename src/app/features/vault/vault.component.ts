@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { VaultService, VaultSecret } from '../../core/services/vault.service';
+import { VaultService } from '../../core/services/vault.service';
+import { VaultSecret, VaultSecretPayload } from '../../core/models/vault-secret.model';
 import { CryptoService } from '../../core/services/crypto.service';
 
 @Component({
@@ -29,9 +30,7 @@ export class VaultComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
-    if (!this.cryptoService.hasVault()) {
-      return;
-    }
+    if (!this.cryptoService.hasVault()) return;
   }
 
   async unlockVault() {
@@ -47,16 +46,15 @@ export class VaultComponent implements OnInit {
   }
 
   async createSecret() {
-    const encrypted = await this.cryptoService.encryptSecret(
-      this.dek,
-      this.newValue
-    );
+    const encrypted = await this.cryptoService.encryptSecret(this.dek, this.newValue);
 
-    this.vaultService.create({
+    const payload: VaultSecretPayload = {
       name: this.newName,
       encryptedBlob: encrypted.encryptedBlob,
       iv: encrypted.iv
-    }).subscribe(() => {
+    };
+
+    this.vaultService.create(payload).subscribe(() => {
       this.newName = '';
       this.newValue = '';
       this.loadSecrets();
@@ -64,32 +62,27 @@ export class VaultComponent implements OnInit {
   }
 
   async decrypt(secret: VaultSecret) {
-    this.decrypted[secret.id] =
-      await this.cryptoService.decryptSecret(
-        this.dek,
-        secret.encryptedBlob,
-        secret.iv
-      );
+    this.decrypted[secret.id] = await this.cryptoService.decryptSecret(
+      this.dek,
+      secret.encryptedBlob,
+      secret.iv
+    );
   }
 
   async updateSecret(secret: VaultSecret) {
     const plaintext = this.decrypted[secret.id];
+    if (!plaintext) return;
 
-    if (!plaintext) {
-      return;
-    }
+    const encrypted = await this.cryptoService.encryptSecret(this.dek, plaintext);
 
-    const encrypted = await this.cryptoService.encryptSecret(
-      this.dek,
-      plaintext
-    );
-
-    this.vaultService.update(secret.id, {
-      name: secret.name, // ime ostaje isto
+    const payload: VaultSecretPayload = {
+      name: secret.name, 
       encryptedBlob: encrypted.encryptedBlob,
       iv: encrypted.iv
-    }).subscribe(() => {
-      delete this.decrypted[secret.id]; // reset edit state
+    };
+
+    this.vaultService.update(secret.id, payload).subscribe(() => {
+      delete this.decrypted[secret.id];
       this.loadSecrets();
     });
   }

@@ -1,13 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
-export interface VaultSecret {
-  id: number;
-  name: string;
-  encryptedBlob: string;
-  iv: string;
-}
+import { VaultSecret, VaultSecretPayload } from '../models/vault-secret.model';
 
 @Injectable({ providedIn: 'root' })
 export class VaultService {
@@ -20,22 +14,11 @@ export class VaultService {
     return this.http.get<VaultSecret[]>(this.API);
   }
 
-  create(payload: {
-    name: string;
-    encryptedBlob: string;
-    iv: string;
-  }): Observable<VaultSecret> {
+  create(payload: VaultSecretPayload): Observable<VaultSecret> {
     return this.http.post<VaultSecret>(this.API, payload);
   }
 
-  update(
-    id: number,
-    payload: {
-      name: string;
-      encryptedBlob: string;
-      iv: string;
-    }
-  ): Observable<VaultSecret> {
+  update(id: number, payload: VaultSecretPayload): Observable<VaultSecret> {
     return this.http.put<VaultSecret>(`${this.API}/${id}`, payload);
   }
 
