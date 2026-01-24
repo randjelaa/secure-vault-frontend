@@ -6,6 +6,7 @@ import { AuthRequest } from '../models/auth-request.model';
 import { LoginStepResponse } from '../models/login-step-response.model';
 import { MfaVerifyRequest } from '../models/mfa-verify-request.model';
 import { AuthResponse } from '../models/auth-response.model';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +14,7 @@ import { AuthResponse } from '../models/auth-response.model';
 export class AuthService {
   private readonly API = 'http://localhost:8080/auth';
 
-  constructor(private http: HttpClient, private vaultState: VaultStateService) {}
+  constructor(private http: HttpClient, private vaultState: VaultStateService, private router: Router) {}
 
   login(request: AuthRequest): Observable<LoginStepResponse> {
     return this.http.post<LoginStepResponse>(`${this.API}/login`, request);
@@ -32,6 +33,7 @@ export class AuthService {
       tap(() => {
         localStorage.removeItem('accessToken');
         this.vaultState.lock(); // 🔐 zaključaj vault u memoriji
+        this.router.navigate(['/login']);
       })
     );
   }
