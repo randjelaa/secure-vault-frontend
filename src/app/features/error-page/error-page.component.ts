@@ -6,10 +6,9 @@ import { Router, RouterLink } from '@angular/router';
   standalone: true,
   imports: [RouterLink],
   templateUrl: './error-page.component.html',
-  styleUrl: './error-page.component.css'
+  styleUrls: ['./error-page.component.css']
 })
 export class ErrorPageComponent {
-
   status: number | string = 'Unknown';
   message: string = 'Something went wrong';
   path?: string;
@@ -20,8 +19,19 @@ export class ErrorPageComponent {
 
     if (state) {
       this.status = state.status ?? this.status;
-      this.message = state.message ?? this.message;
       this.path = state.path;
+
+      switch (state.status) {
+        case 403:
+          this.message = "You don't have permission to access this resource.";
+          break;
+        case 429:
+          this.message = "Too many requests. Please try again later.";
+          break;
+        default:
+          this.message = state.message || this.message;
+          break;
+      }
     }
   }
 }

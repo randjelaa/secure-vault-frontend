@@ -8,7 +8,6 @@ import { DeveloperComponent } from './features/developer/developer.component';
 import { LogoutComponent } from './features/logout/logout.component';
 import { SelectRoleComponent } from './features/select-role/select-role.component';
 import { PendingApprovalComponent } from './features/pending-approval/pending-approval.component';
-import { RateLimitPageComponent } from './features/rate-limit-page/rate-limit-page.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -21,7 +20,6 @@ export const routes: Routes = [
   { path: 'developer', component: DeveloperComponent, canActivate: [authGuard] },
 
   { path: 'error', component: ErrorPageComponent },
-  { path: 'rate-limit-page', component: RateLimitPageComponent },
   
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: '**', redirectTo: 'error' }

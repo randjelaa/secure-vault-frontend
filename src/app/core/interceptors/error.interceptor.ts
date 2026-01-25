@@ -11,21 +11,17 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       const isAuth = req.url.includes('/auth/');
       const status = err.status;
 
-      const shouldIgnore = isAuth && (status === 401 || status === 403);
+      const shouldIgnore = status === 401;
 
       if (!shouldIgnore) {
-        if (status === 429) {
-          router.navigate(['/rate-limit-page'], { replaceUrl: true });
-        } else {
-          router.navigate(['/error'], {
-            state: {
-              status,
-              message: err.error?.message || 'Unexpected error',
-              path: req.url
-            },
-            replaceUrl: true
-          });
-        }
+        router.navigate(['/error'], {
+          state: {
+            status,
+            message: err.error?.message || 'Unexpected error',
+            path: req.url
+          },
+          replaceUrl: true
+        });
       }
 
       return throwError(() => err);
