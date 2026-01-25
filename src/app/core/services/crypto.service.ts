@@ -1,14 +1,15 @@
 import { Injectable } from '@angular/core';
 import { VaultStateService } from './vault-state.service';
+import { environment } from '../../../environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CryptoService {
 
-  private readonly VAULT_KEY = 'vault_encrypted_key';
-  private readonly VAULT_SALT = 'vault_salt';
-  private readonly VAULT_IV = 'vault_iv';
+  private readonly VAULT_KEY = environment.vault.key;
+  private readonly VAULT_SALT = environment.vault.salt;
+  private readonly VAULT_IV = environment.vault.iv;
 
   constructor(private vaultState: VaultStateService) {}
 

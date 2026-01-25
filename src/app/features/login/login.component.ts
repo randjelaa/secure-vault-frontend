@@ -4,6 +4,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
 import QRCode from 'qrcode';
 import { Router } from '@angular/router';
+import { environment } from '../../../environment';
 
 declare const google: any;
 
@@ -14,7 +15,7 @@ declare const google: any;
   templateUrl: './login.component.html'
 })
 export class LoginComponent {
-  private readonly GOOGLE_CLIENT_ID = '448986711630-6i1hul9kt6l3a2quiesl0n5bui6mej13.apps.googleusercontent.com';
+  private readonly GOOGLE_CLIENT_ID = environment.google.clientId;
 
   step: 'PASSWORD' | 'MFA' = 'PASSWORD';
   error: string | null = null;

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { LogoutComponent } from '../logout/logout.component';
 import { VaultComponent } from '../vault/vault.component';
+import { UserService } from '../../core/services/user.service';
 
 @Component({
   selector: 'app-admin',
@@ -16,11 +17,16 @@ export class AdminComponent implements OnInit {
 
   needsVaultSetup = false;
   masterPassword = '';
+  username: string | null = null;
 
-  constructor(private cryptoService: CryptoService) {}
+  constructor(
+    private cryptoService: CryptoService,
+    private userService: UserService
+  ) {}
 
   ngOnInit(): void {
     this.needsVaultSetup = !this.cryptoService.hasVault();
+    this.loadUsername();
   }
 
   async createVault(): Promise<void> {
@@ -34,5 +40,15 @@ export class AdminComponent implements OnInit {
     this.needsVaultSetup = false;
 
     alert('Vault initialized');
+  }
+
+  private loadUsername(): void {
+    this.userService.getAdmin().subscribe({
+      next: res => this.username = res.username,
+      error: err => {
+        console.error('Failed to load username', err);
+        this.username = null;
+      }
+    });
   }
 }

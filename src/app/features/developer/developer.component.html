@@ -1,4 +1,8 @@
-<h2>Developer Dashboard</h2>
+@if (username) {
+  <h2>Welcome, {{ username }}</h2>
+} @else {
+  <h2>Admin Dashboard</h2>
+}
 
 @if (needsVaultSetup) {
   <div class="vault-setup">

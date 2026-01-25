@@ -1,20 +1,26 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
+import { Router } from '@angular/router';
 import { VaultStateService } from './vault-state.service';
 import { AuthRequest } from '../models/auth-request.model';
 import { LoginStepResponse } from '../models/login-step-response.model';
 import { MfaVerifyRequest } from '../models/mfa-verify-request.model';
 import { AuthResponse } from '../models/auth-response.model';
-import { Router } from '@angular/router';
+import { environment } from '../../../environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly API = 'http://localhost:8080/auth';
 
-  constructor(private http: HttpClient, private vaultState: VaultStateService, private router: Router) {}
+  private readonly API = `${environment.apiBaseUrl}/auth`;
+
+  constructor(
+    private http: HttpClient,
+    private vaultState: VaultStateService,
+    private router: Router
+  ) {}
 
   login(request: AuthRequest): Observable<LoginStepResponse> {
     return this.http.post<LoginStepResponse>(`${this.API}/login`, request);
@@ -34,7 +40,7 @@ export class AuthService {
         localStorage.removeItem('accessToken');
         this.vaultState.lock(); 
         this.router.navigateByUrl('/login', { replaceUrl: true }).then(() => {
-          window.location.reload(); //todo: testing
+          window.location.reload(); 
         });
       })
     );
