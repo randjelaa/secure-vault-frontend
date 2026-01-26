@@ -31,10 +31,11 @@ export class VaultService {
   shareSecret(payload: {
     secretId: number;
     sharedWithUserId: number;
-    encryptedBlob: string;
-    iv: string;
+    encryptedBlob: string;            // AES-GCM enkriptovana tajna
+    iv: string;                        // IV za AES-GCM enkripciju tajne
+    encryptedSymmetricKey: string;     // RSA-OAEP enkriptovani simetrični ključ
   }) {
-    return this.http.post(`${this.API_BASE}/team-lead/share`, payload, { withCredentials: true });
+      return this.http.post(`${this.API_BASE}/team-lead/share`, payload, { withCredentials: true });
   }
 
 }

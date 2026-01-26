@@ -59,49 +59,6 @@ export class CryptoService {
     );
   }
 
-  private async generateAsymmetricKeys(kek: CryptoKey): Promise<void> {
-    const keyPair = await crypto.subtle.generateKey(
-      {
-        name: 'RSA-OAEP',
-        modulusLength: 2048,
-        publicExponent: new Uint8Array([1, 0, 1]),
-        hash: 'SHA-256'
-      },
-      true,
-      ['encrypt', 'decrypt']
-    );
-
-    const publicKeyRaw = await crypto.subtle.exportKey(
-      'spki',
-      keyPair.publicKey
-    );
-
-    const privateKeyRaw = await crypto.subtle.exportKey(
-      'pkcs8',
-      keyPair.privateKey
-    );
-
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-    const encryptedPrivate = await crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv: this.toArrayBuffer(iv) },
-      kek,
-      privateKeyRaw
-    );
-
-    localStorage.setItem(
-      this.key(this.ASYM_PUBLIC_KEY),
-      this.toBase64(publicKeyRaw)
-    );
-
-    localStorage.setItem(
-      this.key(this.ASYM_PRIVATE_KEY),
-      JSON.stringify({
-        blob: this.toBase64(encryptedPrivate),
-        iv: this.toBase64(iv)
-      })
-    );
-  }
-
   async initVault(masterPassword: string): Promise<void> {
     const salt = this.generateSalt();
     const iv = crypto.getRandomValues(new Uint8Array(12));
@@ -126,7 +83,7 @@ export class CryptoService {
     localStorage.setItem(this.key(this.VAULT_IV), this.toBase64(iv));
 
     this.vaultState.dek = dek; // RAM
-    await this.generateAsymmetricKeys(kek);
+    await this.generateAsymmetricKeys(masterPassword); //ASYM
   }
 
   async unlockVault(masterPassword: string): Promise<CryptoKey> {
@@ -175,42 +132,6 @@ export class CryptoService {
     return new TextDecoder().decode(decrypted);
   }
 
-  // ===== ASYMMETRIC =====
-
-  async encryptForUser(
-    publicKeyBase64: string,
-    plaintext: string
-  ): Promise<{ encryptedBlob: string; iv: string }> {
-
-    const keyBytes = this.fromBase64(publicKeyBase64);
-    const keyBuffer = this.toArrayBuffer(keyBytes); 
-
-    const publicKey = await crypto.subtle.importKey(
-      'spki',
-      keyBuffer,
-      {
-        name: 'RSA-OAEP',
-        hash: 'SHA-256'
-      },
-      false,
-      ['encrypt']
-    );
-
-    const data = new TextEncoder().encode(plaintext);
-
-    const encrypted = await crypto.subtle.encrypt(
-      { name: 'RSA-OAEP' },
-      publicKey,
-      data
-    );
-
-    return {
-      encryptedBlob: this.toBase64(encrypted),
-      iv: '' 
-    };
-  }
-
-
   // HELPERS
   private toArrayBuffer(data: Uint8Array): ArrayBuffer {
     const buffer = new ArrayBuffer(data.byteLength);
@@ -232,12 +153,54 @@ export class CryptoService {
     return bytes;
   }
 
-  async loadPrivateKey(masterPassword: string): Promise<CryptoKey> {
-    const encrypted = JSON.parse(
-      localStorage.getItem(this.key(this.ASYM_PRIVATE_KEY))!
+  //ASYM
+  private async generateAsymmetricKeys(masterPassword: string): Promise<void> {
+    // 1. Generiši RSA ključ par
+    const keyPair = await crypto.subtle.generateKey(
+      {
+        name: 'RSA-OAEP',
+        modulusLength: 2048,
+        publicExponent: new Uint8Array([1, 0, 1]),
+        hash: 'SHA-256'
+      },
+      true,
+      ['encrypt', 'decrypt']
     );
 
-    const salt = this.fromBase64(localStorage.getItem(this.key(this.VAULT_SALT))!);
+    // 2. Exportuj ključeve
+    const publicKeyRaw = await crypto.subtle.exportKey('spki', keyPair.publicKey);
+    const privateKeyRaw = await crypto.subtle.exportKey('pkcs8', keyPair.privateKey);
+
+    // 3. Deriviraj novi KEK iz master password (za privatni ključ)
+    const salt = crypto.getRandomValues(new Uint8Array(16)); // novi salt
+    const kek = await this.deriveKey(masterPassword, salt);
+
+    // 4. Enkripcija privatnog ključa
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const encryptedPrivate = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv },
+      kek,
+      privateKeyRaw
+    );
+
+    // 5. Spremi u localStorage
+    localStorage.setItem(this.key(this.ASYM_PUBLIC_KEY), this.toBase64(publicKeyRaw));
+    localStorage.setItem(
+      this.key(this.ASYM_PRIVATE_KEY),
+      JSON.stringify({
+        blob: this.toBase64(encryptedPrivate),
+        iv: this.toBase64(iv),
+        salt: this.toBase64(salt)
+      })
+    );
+  }
+
+  async loadPrivateKey(masterPassword: string): Promise<CryptoKey> {
+    const encrypted = JSON.parse(
+      localStorage.getItem(this.key('ASYM_PRIVATE_KEY'))!
+    );
+
+    const salt = this.fromBase64(encrypted.salt);
     const kek = await this.deriveKey(masterPassword, salt);
 
     const decrypted = await crypto.subtle.decrypt(
@@ -258,9 +221,56 @@ export class CryptoService {
     );
   }
 
+  async encryptForUser(publicKeyBase64: string, plaintext: string): Promise<{
+    encryptedSecret: string;
+    iv: string;
+    encryptedSymmetricKey: string;
+  }> {
+    // 1. Kreiraj simetrični ključ
+    const symmetricKey = await crypto.subtle.generateKey(
+      { name: 'AES-GCM', length: 256 },
+      true,
+      ['encrypt', 'decrypt']
+    );
+
+    // 2. Enkripcija same tajne
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const encoded = new TextEncoder().encode(plaintext);
+    const encryptedSecret = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv },
+      symmetricKey,
+      encoded
+    );
+
+    // 3. Importuj javni ključ developera
+    const publicKey = await crypto.subtle.importKey(
+      'spki',
+      this.toArrayBuffer(this.fromBase64(publicKeyBase64)),
+      { name: 'RSA-OAEP', hash: 'SHA-256' },
+      false,
+      ['encrypt']
+    );
+
+    // 4. Export simetričnog ključa i enkripcija RSA-OAEP
+    const symmetricKeyRaw = await crypto.subtle.exportKey('raw', symmetricKey);
+    const encryptedSymmetricKey = await crypto.subtle.encrypt(
+      { name: 'RSA-OAEP' },
+      publicKey,
+      symmetricKeyRaw
+    );
+
+    return {
+      encryptedSecret: this.toBase64(encryptedSecret),
+      iv: this.toBase64(iv),
+      encryptedSymmetricKey: this.toBase64(encryptedSymmetricKey)
+    };
+  }
+
   getPublicKeyBase64(): string {
     const key = localStorage.getItem(this.key(this.ASYM_PUBLIC_KEY));
-    if (!key) throw new Error('Public key missing');
+    if (!key) {
+      throw new Error('Public key not found in localStorage');
+    }
     return key;
   }
 

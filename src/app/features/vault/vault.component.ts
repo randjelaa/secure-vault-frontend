@@ -109,27 +109,30 @@ export class VaultComponent implements OnInit {
   }
 
   async shareWith(secret: VaultSecret, developer: any) {
+    // 1. Dekripcija tajne lokalno
     const plaintext = await this.cryptoService.decryptSecret(
       this.dek,
       secret.encryptedBlob,
       secret.iv
     );
 
+    // 2. Enkripcija za korisnika
     const encrypted = await this.cryptoService.encryptForUser(
       developer.publicKey,
       plaintext
     );
 
+    // 3. Pošalji na backend
     this.vaultService.shareSecret({
-      secretId: secret.id,
+      secretId: secret.id,             // za kasnije dohvat owner-a
       sharedWithUserId: developer.id,
-      encryptedBlob: encrypted.encryptedBlob,
-      iv: encrypted.iv
+      encryptedBlob: encrypted.encryptedSecret,
+      iv: encrypted.iv,
+      encryptedSymmetricKey: encrypted.encryptedSymmetricKey
     }).subscribe(() => {
       alert('Secret shared');
       this.sharingSecretId = null;
     });
   }
-
 
 }
