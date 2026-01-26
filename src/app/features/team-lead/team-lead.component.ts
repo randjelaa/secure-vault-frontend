@@ -37,8 +37,16 @@ export class TeamLeadComponent implements OnInit {
 
     await this.cryptoService.initVault(this.masterPassword);
     this.masterPassword = '';
-    this.needsVaultSetup = false;
+  
+    const publicKey = this.cryptoService.getPublicKeyBase64();
 
+    this.userService.uploadPublicKey(publicKey).subscribe({
+      next: () => {
+        console.log('Public key saved');
+      }
+    });
+    
+    this.needsVaultSetup = false;
     alert('Vault initialized');
   }
 

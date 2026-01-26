@@ -5,7 +5,9 @@ export const environment = {
   vault: {
     key: 'vault_encrypted_key',
     salt: 'vault_salt',
-    iv: 'vault_iv'
+    iv: 'vault_iv',
+    private_key: 'vault_asym_private',
+    public_key: 'vault_asym_public'
   },
 
   google: {

@@ -11,6 +11,9 @@ export class CryptoService {
   private readonly VAULT_SALT = environment.vault.salt;
   private readonly VAULT_IV = environment.vault.iv;
 
+  private readonly ASYM_PRIVATE_KEY = environment.vault.private_key;
+  private readonly ASYM_PUBLIC_KEY = environment.vault.public_key;
+
   constructor(private vaultState: VaultStateService) {}
 
   private getUserPrefix(): string {
@@ -56,6 +59,49 @@ export class CryptoService {
     );
   }
 
+  private async generateAsymmetricKeys(kek: CryptoKey): Promise<void> {
+    const keyPair = await crypto.subtle.generateKey(
+      {
+        name: 'RSA-OAEP',
+        modulusLength: 2048,
+        publicExponent: new Uint8Array([1, 0, 1]),
+        hash: 'SHA-256'
+      },
+      true,
+      ['encrypt', 'decrypt']
+    );
+
+    const publicKeyRaw = await crypto.subtle.exportKey(
+      'spki',
+      keyPair.publicKey
+    );
+
+    const privateKeyRaw = await crypto.subtle.exportKey(
+      'pkcs8',
+      keyPair.privateKey
+    );
+
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const encryptedPrivate = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv: this.toArrayBuffer(iv) },
+      kek,
+      privateKeyRaw
+    );
+
+    localStorage.setItem(
+      this.key(this.ASYM_PUBLIC_KEY),
+      this.toBase64(publicKeyRaw)
+    );
+
+    localStorage.setItem(
+      this.key(this.ASYM_PRIVATE_KEY),
+      JSON.stringify({
+        blob: this.toBase64(encryptedPrivate),
+        iv: this.toBase64(iv)
+      })
+    );
+  }
+
   async initVault(masterPassword: string): Promise<void> {
     const salt = this.generateSalt();
     const iv = crypto.getRandomValues(new Uint8Array(12));
@@ -80,6 +126,7 @@ export class CryptoService {
     localStorage.setItem(this.key(this.VAULT_IV), this.toBase64(iv));
 
     this.vaultState.dek = dek; // RAM
+    await this.generateAsymmetricKeys(kek);
   }
 
   async unlockVault(masterPassword: string): Promise<CryptoKey> {
@@ -148,4 +195,37 @@ export class CryptoService {
     for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
     return bytes;
   }
+
+  async loadPrivateKey(masterPassword: string): Promise<CryptoKey> {
+    const encrypted = JSON.parse(
+      localStorage.getItem(this.key(this.ASYM_PRIVATE_KEY))!
+    );
+
+    const salt = this.fromBase64(localStorage.getItem(this.key(this.VAULT_SALT))!);
+    const kek = await this.deriveKey(masterPassword, salt);
+
+    const decrypted = await crypto.subtle.decrypt(
+      {
+        name: 'AES-GCM',
+        iv: this.toArrayBuffer(this.fromBase64(encrypted.iv))
+      },
+      kek,
+      this.toArrayBuffer(this.fromBase64(encrypted.blob))
+    );
+
+    return crypto.subtle.importKey(
+      'pkcs8',
+      decrypted,
+      { name: 'RSA-OAEP', hash: 'SHA-256' },
+      false,
+      ['decrypt']
+    );
+  }
+
+  getPublicKeyBase64(): string {
+    const key = localStorage.getItem(this.key(this.ASYM_PUBLIC_KEY));
+    if (!key) throw new Error('Public key missing');
+    return key;
+  }
+
 }

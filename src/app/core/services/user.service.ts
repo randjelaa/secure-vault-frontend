@@ -30,4 +30,9 @@ export class UserService {
   getDeveloper(): Observable<UserResponse> {
     return this.http.get<UserResponse>(`${this.DEVELOPER}/check`);
   }
+
+  uploadPublicKey(publicKey: string) {
+    return this.http.post(`${this.API}/users/public-key`, { publicKey }, { withCredentials: true });
+  }
+
 }
