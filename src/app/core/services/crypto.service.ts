@@ -175,6 +175,42 @@ export class CryptoService {
     return new TextDecoder().decode(decrypted);
   }
 
+  // ===== ASYMMETRIC =====
+
+  async encryptForUser(
+    publicKeyBase64: string,
+    plaintext: string
+  ): Promise<{ encryptedBlob: string; iv: string }> {
+
+    const keyBytes = this.fromBase64(publicKeyBase64);
+    const keyBuffer = this.toArrayBuffer(keyBytes); 
+
+    const publicKey = await crypto.subtle.importKey(
+      'spki',
+      keyBuffer,
+      {
+        name: 'RSA-OAEP',
+        hash: 'SHA-256'
+      },
+      false,
+      ['encrypt']
+    );
+
+    const data = new TextEncoder().encode(plaintext);
+
+    const encrypted = await crypto.subtle.encrypt(
+      { name: 'RSA-OAEP' },
+      publicKey,
+      data
+    );
+
+    return {
+      encryptedBlob: this.toBase64(encrypted),
+      iv: '' 
+    };
+  }
+
+
   // HELPERS
   private toArrayBuffer(data: Uint8Array): ArrayBuffer {
     const buffer = new ArrayBuffer(data.byteLength);

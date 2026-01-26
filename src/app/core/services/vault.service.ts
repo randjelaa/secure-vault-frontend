@@ -7,6 +7,7 @@ import { environment } from '../../../environment';
 @Injectable({ providedIn: 'root' })
 export class VaultService {
 
+  private readonly API_BASE = `${environment.apiBaseUrl}`;
   private readonly API = `${environment.apiBaseUrl}/vault`;
 
   constructor(private http: HttpClient) {}
@@ -26,4 +27,14 @@ export class VaultService {
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.API}/${id}`);
   }
+
+  shareSecret(payload: {
+    secretId: number;
+    sharedWithUserId: number;
+    encryptedBlob: string;
+    iv: string;
+  }) {
+    return this.http.post(`${this.API_BASE}/team-lead/share`, payload, { withCredentials: true });
+  }
+
 }

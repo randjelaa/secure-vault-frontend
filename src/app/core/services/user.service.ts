@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environment';
+import { DeveloperDto } from '../models/developer-dto.model';
 
 interface UserResponse {
   username: string;
@@ -33,6 +34,10 @@ export class UserService {
 
   uploadPublicKey(publicKey: string) {
     return this.http.post(`${this.API}/users/public-key`, { publicKey }, { withCredentials: true });
+  }
+
+  getDevelopers() {
+    return this.http.get<DeveloperDto[]>(`${this.TEAMLEAD}/developers`, { withCredentials: true });
   }
 
 }

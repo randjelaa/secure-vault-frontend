@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { VaultService } from '../../core/services/vault.service';
 import { VaultSecret, VaultSecretPayload } from '../../core/models/vault-secret.model';
 import { CryptoService } from '../../core/services/crypto.service';
+import { UserService } from '../../core/services/user.service';
 
 @Component({
   standalone: true,
@@ -24,9 +25,15 @@ export class VaultComponent implements OnInit {
   masterPassword = '';
   unlocked = false;
 
+  developers: any[] = [];
+  sharingSecretId: number | null = null;
+  @Input() canShare = false;
+
+
   constructor(
     private vaultService: VaultService,
-    private cryptoService: CryptoService
+    private cryptoService: CryptoService,
+    private userService: UserService
   ) {}
 
   async ngOnInit() {
@@ -92,4 +99,37 @@ export class VaultComponent implements OnInit {
       this.loadSecrets();
     });
   }
+
+  openShare(secret: VaultSecret) {
+    this.sharingSecretId = secret.id;
+
+    this.userService.getDevelopers().subscribe(devs => {
+      this.developers = devs;
+    });
+  }
+
+  async shareWith(secret: VaultSecret, developer: any) {
+    const plaintext = await this.cryptoService.decryptSecret(
+      this.dek,
+      secret.encryptedBlob,
+      secret.iv
+    );
+
+    const encrypted = await this.cryptoService.encryptForUser(
+      developer.publicKey,
+      plaintext
+    );
+
+    this.vaultService.shareSecret({
+      secretId: secret.id,
+      sharedWithUserId: developer.id,
+      encryptedBlob: encrypted.encryptedBlob,
+      iv: encrypted.iv
+    }).subscribe(() => {
+      alert('Secret shared');
+      this.sharingSecretId = null;
+    });
+  }
+
+
 }

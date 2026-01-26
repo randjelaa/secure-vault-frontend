@@ -25,6 +25,10 @@
 
       <button (click)="decrypt(s)">Decrypt</button>
       <button (click)="delete(s.id)">Delete</button>
+      @if (canShare) {
+        <button (click)="openShare(s)">Share</button>
+      }
+
 
       @if (decrypted[s.id] !== undefined) {
         <input
@@ -34,5 +38,17 @@
         <button (click)="updateSecret(s)">Update</button>
       }
     </div>
+
+    @if (sharingSecretId === s.id) {
+      <div class="share-box">
+        <p>Share with:</p>
+
+        @for (dev of developers; track dev.id) {
+          <button (click)="shareWith(s, dev)">
+            {{ dev.username }}
+          </button>
+        }
+      </div>
+    }
   }
 }
