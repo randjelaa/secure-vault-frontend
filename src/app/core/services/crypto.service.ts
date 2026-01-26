@@ -196,13 +196,25 @@ export class CryptoService {
   }
 
   async loadPrivateKey(masterPassword: string): Promise<CryptoKey> {
-    const encrypted = JSON.parse(
-      localStorage.getItem(this.key('ASYM_PRIVATE_KEY'))!
-    );
+    // Učitaj enkriptovani privatni ključ iz localStorage
+    const encryptedJson = localStorage.getItem(this.key(this.ASYM_PRIVATE_KEY));
+    if (!encryptedJson) {
+      throw new Error('Encrypted private key not found in localStorage');
+    }
 
+    const encrypted = JSON.parse(encryptedJson);
+
+    if (!encrypted.blob || !encrypted.iv || !encrypted.salt) {
+      throw new Error('Encrypted private key is missing required fields (blob, iv, salt)');
+    }
+
+    // Dohvati salt iz samog JSON-a
     const salt = this.fromBase64(encrypted.salt);
+
+    // Kreiraj KEK iz master password-a i salt-a
     const kek = await this.deriveKey(masterPassword, salt);
 
+    // Dekripcija privatnog ključa (AES-GCM)
     const decrypted = await crypto.subtle.decrypt(
       {
         name: 'AES-GCM',
@@ -212,6 +224,7 @@ export class CryptoService {
       this.toArrayBuffer(this.fromBase64(encrypted.blob))
     );
 
+    // Importuj privatni ključ (RSA-OAEP) za dekripciju simetričnih ključeva
     return crypto.subtle.importKey(
       'pkcs8',
       decrypted,

@@ -20,6 +20,25 @@
   </div>
 } @else {
   <app-vault></app-vault>
+
+  <hr/>
+
+  <h2>Secrets shared with me</h2>
+
+    <ul>
+        @for (s of sharedSecrets; track s)
+        {
+            <li>
+                {{ s.name }} (owner: {{ s.ownerUsername }})
+                <button (click)="decrypt(s)">Decrypt</button>
+
+                @if (s.decrypted !== null)
+                {
+                    <div>{{ s.decrypted }}</div>
+                }
+            </li>
+        }
+    </ul>
 }
 
 <app-logout></app-logout>

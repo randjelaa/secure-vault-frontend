@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { VaultSecret, VaultSecretPayload } from '../models/vault-secret.model';
 import { environment } from '../../../environment';
+import { SharedSecretResponse } from '../models/shared-secret-response.model';
 
 @Injectable({ providedIn: 'root' })
 export class VaultService {
@@ -36,6 +37,10 @@ export class VaultService {
     encryptedSymmetricKey: string;     // RSA-OAEP enkriptovani simetrični ključ
   }) {
       return this.http.post(`${this.API_BASE}/team-lead/share`, payload, { withCredentials: true });
+  }
+
+  getSharedWithMe() {
+    return this.http.get<SharedSecretResponse[]>(`${this.API_BASE}/developer/shared-with-me`, { withCredentials: true });
   }
 
 }
