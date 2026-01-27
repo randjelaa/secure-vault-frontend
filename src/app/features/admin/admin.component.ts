@@ -123,16 +123,16 @@ export class AdminComponent implements OnInit {
   }
 
   savePolicy(): void {
-  if (!this.policyDraft) return;
+    if (!this.policyDraft) return;
 
-  this.securityPolicyService.updatePolicy(this.policyDraft)
-    .subscribe(updated => {
-      this.policy = updated;
-      this.policyDraft = { ...updated };
-      this.policySaved = true;
+    this.securityPolicyService.updatePolicy(this.policyDraft)
+      .subscribe(updated => {
+        this.policy = updated;
+        this.policyDraft = { ...updated };
+        this.policySaved = true;
 
-      setTimeout(() => this.policySaved = false, 3000);
-    });
-}
-
+        setTimeout(() => this.policySaved = false, 3000);
+      }
+    );
+  }
 }
