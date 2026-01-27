@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environment';
 import { DeveloperDto } from '../models/developer-dto.model';
+import { UserAdminResponse } from '../models/user-admin-response.model';
 
 interface UserResponse {
   username: string;
@@ -39,5 +40,26 @@ export class UserService {
   getDevelopers() {
     return this.http.get<DeveloperDto[]>(`${this.TEAMLEAD}/developers`, { withCredentials: true });
   }
+
+  getPendingUsers() {
+    return this.http.get<UserAdminResponse[]>(`${this.ADMIN}/users/pending`);
+  }
+
+  getActiveUsers() {
+    return this.http.get<UserAdminResponse[]>(`${this.ADMIN}/users/active`);
+  }
+
+  approveUser(id: number) {
+    return this.http.post(`${this.ADMIN}/users/${id}/approve`, {});
+  }
+
+  deleteUser(id: number) {
+    return this.http.delete(`${this.ADMIN}/users/${id}`);
+  }
+
+  createUser(data: any) {
+    return this.http.post(`${this.ADMIN}/users/new`, data);
+  }
+
 
 }

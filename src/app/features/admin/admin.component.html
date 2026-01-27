@@ -14,12 +14,105 @@
       [(ngModel)]="masterPassword"
     />
 
-    <button (click)="createVault()">
-      Create Vault
-    </button>
+    <button (click)="createVault()">Create Vault</button>
   </div>
 } @else {
   <app-vault></app-vault>
 }
+
+<hr />
+
+<section class="admin-users">
+
+  <h3>Pending user requests</h3>
+
+  @if (pendingUsers.length > 0) {
+    <table>
+      <tr>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Created</th>
+        <th>Actions</th>
+      </tr>
+
+      @for (user of pendingUsers; track user.id) {
+        <tr>
+          <td>{{ user.username }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.role }}</td>
+          <td>{{ user.createdAt }}</td>
+          <td>
+            <button (click)="approveUser(user.id)">Approve</button>
+            <button (click)="deleteUser(user.id)">Reject</button>
+          </td>
+        </tr>
+      }
+    </table>
+  } @else {
+    <p>No pending users</p>
+  }
+
+  <hr />
+
+  <h3>Active users</h3>
+
+  @if (activeUsers.length > 0) {
+    <table>
+      <tr>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Actions</th>
+      </tr>
+
+      @for (user of activeUsers; track user.id) {
+        <tr>
+          <td>{{ user.username }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.role }}</td>
+          <td>
+            <button (click)="deleteUser(user.id)">Delete</button>
+          </td>
+        </tr>
+      }
+    </table>
+  } @else {
+    <p>No active users</p>
+  }
+
+  <hr />
+
+  <h3>Create new user</h3>
+
+  <div class="create-user">
+    <input
+      placeholder="Username"
+      [(ngModel)]="newUser.username"
+    />
+
+    <input
+      placeholder="Email"
+      [(ngModel)]="newUser.email"
+    />
+
+    <input
+      type="password"
+      placeholder="Password"
+      [(ngModel)]="newUser.password"
+    />
+
+    <select [(ngModel)]="newUser.role">
+      <option value="ADMIN">ADMIN</option>
+      <option value="TEAM_LEAD">TEAM_LEAD</option>
+      <option value="DEVELOPER">DEVELOPER</option>
+    </select>
+
+    <button (click)="createUser()">Create</button>
+  </div>
+
+</section>
+
+<hr />
 
 <app-logout></app-logout>

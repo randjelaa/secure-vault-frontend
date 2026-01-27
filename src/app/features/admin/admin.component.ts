@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { LogoutComponent } from '../logout/logout.component';
 import { VaultComponent } from '../vault/vault.component';
 import { UserService } from '../../core/services/user.service';
+import { UserAdminResponse } from '../../core/models/user-admin-response.model';
 
 @Component({
   selector: 'app-admin',
@@ -19,6 +20,17 @@ export class AdminComponent implements OnInit {
   masterPassword = '';
   username: string | null = null;
 
+  pendingUsers: UserAdminResponse[] = [];
+  activeUsers: UserAdminResponse[] = [];
+
+  newUser = {
+    username: '',
+    email: '',
+    password: '',
+    role: 'DEVELOPER'
+  };
+
+
   constructor(
     private cryptoService: CryptoService,
     private userService: UserService
@@ -27,6 +39,7 @@ export class AdminComponent implements OnInit {
   ngOnInit(): void {
     this.needsVaultSetup = !this.cryptoService.hasVault();
     this.loadUsername();
+    this.loadUsers();
   }
 
   async createVault(): Promise<void> {
@@ -59,4 +72,41 @@ export class AdminComponent implements OnInit {
       }
     });
   }
+
+  loadUsers(): void {
+    this.userService.getPendingUsers().subscribe(res => {
+      this.pendingUsers = res;
+    });
+
+    this.userService.getActiveUsers().subscribe(res => {
+      this.activeUsers = res;
+    });
+  }
+
+  approveUser(id: number): void {
+    this.userService.approveUser(id).subscribe(() => {
+      this.loadUsers();
+    });
+  }
+
+  deleteUser(id: number): void {
+    if (!confirm('Are you sure?')) return;
+
+    this.userService.deleteUser(id).subscribe(() => {
+      this.loadUsers();
+    });
+  }
+
+  createUser(): void {
+    this.userService.createUser(this.newUser).subscribe(() => {
+      this.newUser = {
+        username: '',
+        email: '',
+        password: '',
+        role: 'DEVELOPER'
+      };
+      this.loadUsers();
+    });
+  }
+
 }
