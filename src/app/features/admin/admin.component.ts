@@ -6,6 +6,8 @@ import { LogoutComponent } from '../logout/logout.component';
 import { VaultComponent } from '../vault/vault.component';
 import { UserService } from '../../core/services/user.service';
 import { UserAdminResponse } from '../../core/models/user-admin-response.model';
+import { SecurityPolicyService } from '../../core/services/security-policy.service';
+import { SecurityPolicy } from '../../core/models/security-policy.model';
 
 @Component({
   selector: 'app-admin',
@@ -30,21 +32,32 @@ export class AdminComponent implements OnInit {
     role: 'DEVELOPER'
   };
 
+  policy?: SecurityPolicy;
+  policyDraft?: SecurityPolicy;
+  policySaved = false;
 
   constructor(
     private cryptoService: CryptoService,
-    private userService: UserService
+    private userService: UserService,
+    private securityPolicyService: SecurityPolicyService
   ) {}
 
   ngOnInit(): void {
     this.needsVaultSetup = !this.cryptoService.hasVault();
     this.loadUsername();
     this.loadUsers();
+
+    this.securityPolicyService.loadPolicy().subscribe(p => {
+      this.policy = p;
+      this.policyDraft = { ...p }; 
+    });
   }
 
   async createVault(): Promise<void> {
-    if (!this.masterPassword || this.masterPassword.length < 8) {
-      alert('Master password too short');
+    const minLen = this.securityPolicyService.minMasterPasswordLength;
+
+    if (!this.masterPassword || this.masterPassword.length < minLen) {
+      alert(`Master password must be at least ${minLen} characters long`);
       return;
     }
 
@@ -108,5 +121,18 @@ export class AdminComponent implements OnInit {
       this.loadUsers();
     });
   }
+
+  savePolicy(): void {
+  if (!this.policyDraft) return;
+
+  this.securityPolicyService.updatePolicy(this.policyDraft)
+    .subscribe(updated => {
+      this.policy = updated;
+      this.policyDraft = { ...updated };
+      this.policySaved = true;
+
+      setTimeout(() => this.policySaved = false, 3000);
+    });
+}
 
 }

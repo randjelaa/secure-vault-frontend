@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { LogoutComponent } from "../logout/logout.component";
 import { VaultComponent } from '../vault/vault.component';
 import { UserService } from '../../core/services/user.service';
+import { SecurityPolicyService } from '../../core/services/security-policy.service';
 
 @Component({
   selector: 'app-team-lead',
@@ -21,7 +22,8 @@ export class TeamLeadComponent implements OnInit {
 
   constructor(
     private cryptoService: CryptoService,
-    private userService: UserService
+    private userService: UserService,
+    private securityPolicyService: SecurityPolicyService
   ) {}
 
   ngOnInit(): void {
@@ -30,8 +32,10 @@ export class TeamLeadComponent implements OnInit {
   }
 
   async createVault(): Promise<void> {
-    if (!this.masterPassword || this.masterPassword.length < 8) {
-      alert('Master password too short');
+    const minLen = this.securityPolicyService.minMasterPasswordLength;
+
+    if (!this.masterPassword || this.masterPassword.length < minLen) {
+      alert(`Master password must be at least ${minLen} characters long`);
       return;
     }
 

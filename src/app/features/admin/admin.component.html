@@ -115,4 +115,51 @@
 
 <hr />
 
+<section class="security-policy">
+
+  <h3>Security policies</h3>
+
+  @if (policyDraft) {
+
+    <div class="policy-field">
+      <label>Minimum master password length</label>
+      <input
+        type="number"
+        min="8"
+        [(ngModel)]="policyDraft.minMasterPasswordLength"
+      />
+    </div>
+
+    <div class="policy-field">
+      <label>Access token TTL (seconds)</label>
+      <input
+        type="number"
+        min="30"
+        [(ngModel)]="policyDraft.accessTokenTtlSeconds"
+      />
+    </div>
+
+    <div class="policy-field">
+      <label>Refresh token TTL (seconds)</label>
+      <input
+        type="number"
+        min="300"
+        [(ngModel)]="policyDraft.refreshTokenTtlSeconds"
+      />
+    </div>
+
+    <button (click)="savePolicy()">Save policy</button>
+
+    @if (policySaved) {
+      <p class="success">Policy updated successfully</p>
+    }
+
+  } @else {
+    <p>Loading security policy...</p>
+  }
+
+</section>
+
+<hr />
+
 <app-logout></app-logout>

@@ -7,6 +7,7 @@ import { VaultComponent } from '../vault/vault.component';
 import { UserService } from '../../core/services/user.service';
 import { SharedSecretResponse } from '../../core/models/shared-secret-response.model';
 import { VaultService } from '../../core/services/vault.service';
+import { SecurityPolicyService } from '../../core/services/security-policy.service';
 
 @Component({
   selector: 'app-developer',
@@ -26,7 +27,8 @@ export class DeveloperComponent {
   constructor(
     private cryptoService: CryptoService,
     private userService: UserService,
-    private vaultService: VaultService
+    private vaultService: VaultService,
+    private securityPolicyService: SecurityPolicyService
   ) {}
 
   ngOnInit(): void {
@@ -38,8 +40,10 @@ export class DeveloperComponent {
   }
 
   async createVault(): Promise<void> {
-    if (!this.masterPassword || this.masterPassword.length < 8) {
-      alert('Master password too short');
+    const minLen = this.securityPolicyService.minMasterPasswordLength;
+
+    if (!this.masterPassword || this.masterPassword.length < minLen) {
+      alert(`Master password must be at least ${minLen} characters long`);
       return;
     }
 
