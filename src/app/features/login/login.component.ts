@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import QRCode from 'qrcode';
 import { Router } from '@angular/router';
 import { environment } from '../../../environment';
+import { NgZone } from '@angular/core';
 
 declare const google: any;
 
@@ -28,7 +29,8 @@ export class LoginComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private ngZone: NgZone
   ) {
     this.loginForm = this.fb.group({
       username: ['', Validators.required],
@@ -105,13 +107,24 @@ export class LoginComponent {
     localStorage.setItem('accessToken', token);
 
     const payload = JSON.parse(atob(token.split('.')[1]));
-    switch (payload.role) {
-      case 'ADMIN': this.router.navigate(['/admin']); break;
-      case 'TEAM_LEAD': this.router.navigate(['/team-lead']); break;
-      case 'DEVELOPER': this.router.navigate(['/developer']); break;
-      default: this.router.navigate(['/']); break;
-    }
+
+    this.ngZone.run(() => {
+      switch (payload.role) {
+        case 'ADMIN':
+          this.router.navigate(['/admin']);
+          break;
+        case 'TEAM_LEAD':
+          this.router.navigate(['/team-lead']);
+          break;
+        case 'DEVELOPER':
+          this.router.navigate(['/developer']);
+          break;
+        default:
+          this.router.navigate(['/']);
+      }
+    });
   }
+
 
   private handleGoogleError(err: any, idToken: string): void {
     if (err.status === 403) {
