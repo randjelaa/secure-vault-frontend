@@ -36,6 +36,8 @@ export class AdminComponent implements OnInit {
   policyDraft?: SecurityPolicy;
   policySaved = false;
 
+  honeypotEnabled = false;
+
   constructor(
     private cryptoService: CryptoService,
     private userService: UserService,
@@ -50,6 +52,10 @@ export class AdminComponent implements OnInit {
     this.securityPolicyService.loadPolicy().subscribe(p => {
       this.policy = p;
       this.policyDraft = { ...p }; 
+    });
+
+    this.securityPolicyService.status().subscribe(enabled => {
+      this.honeypotEnabled = enabled;
     });
   }
 
@@ -135,4 +141,17 @@ export class AdminComponent implements OnInit {
       }
     );
   }
+
+  enableHoneypot(): void {
+    this.securityPolicyService.enable().subscribe(() => {
+      this.honeypotEnabled = true;
+    });
+  }
+
+  disableHoneypot(): void {
+    this.securityPolicyService.disable().subscribe(() => {
+      this.honeypotEnabled = false;
+    });
+  }
+
 }

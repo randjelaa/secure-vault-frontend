@@ -29,5 +29,17 @@ export class SecurityPolicyService {
   get minMasterPasswordLength(): number {
     return this.policy?.minMasterPasswordLength ?? 8;
   }
+
+  enable() {
+    return this.http.post<void>(`${this.API}/admin/honeypot/enable`, {});
+  }
+
+  disable() {
+    return this.http.post<void>(`${this.API}/admin/honeypot/disable`, {});
+  }
+
+  status() {
+    return this.http.get<boolean>(`${this.API}/admin/honeypot/status`);
+  }
 }
 

@@ -154,6 +154,34 @@
       <p class="success">Policy updated successfully</p>
     }
 
+    <section class="honeypot">
+
+    <h3>Honeypot / Intrusion Detection</h3>
+
+    <p>
+      Status:
+      <strong [class.enabled]="honeypotEnabled"
+              [class.disabled]="!honeypotEnabled">
+        {{ honeypotEnabled ? 'ENABLED' : 'DISABLED' }}
+      </strong>
+    </p>
+
+    @if (!honeypotEnabled) {
+      <button (click)="enableHoneypot()">
+        Enable vulnerable endpoint
+      </button>
+    } @else {
+      <button (click)="disableHoneypot()">
+        Disable vulnerable endpoint
+      </button>
+    }
+
+    <p class="warning">
+      ⚠️ This endpoint is intentionally vulnerable and should only be enabled for demo/testing.
+    </p>
+
+  </section>
+
   } @else {
     <p>Loading security policy...</p>
   }
