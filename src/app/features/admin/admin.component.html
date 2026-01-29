@@ -33,6 +33,7 @@
         <th>Email</th>
         <th>Role</th>
         <th>Created</th>
+        <th>Is blocked</th>
         <th>Actions</th>
       </tr>
 
@@ -42,6 +43,13 @@
           <td>{{ user.email }}</td>
           <td>{{ user.role }}</td>
           <td>{{ user.createdAt }}</td>
+          <td>
+            @if (user.blockedAt === null) {
+              False
+            } @else {
+              True
+            }
+          </td>
           <td>
             <button (click)="approveUser(user.id)">Approve</button>
             <button (click)="deleteUser(user.id)">Reject</button>

@@ -5,4 +5,5 @@ export interface UserAdminResponse {
   role: string;
   enabled: boolean;
   createdAt: string;
+  blockedAt: string;
 }
