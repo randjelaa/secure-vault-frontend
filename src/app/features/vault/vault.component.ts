@@ -109,22 +109,19 @@ export class VaultComponent implements OnInit {
   }
 
   async shareWith(secret: VaultSecret, developer: any) {
-    // 1. Dekripcija tajne lokalno
     const plaintext = await this.cryptoService.decryptSecret(
       this.dek,
       secret.encryptedBlob,
       secret.iv
     );
 
-    // 2. Enkripcija za korisnika
     const encrypted = await this.cryptoService.encryptForUser(
       developer.publicKey,
       plaintext
     );
 
-    // 3. Pošalji na backend
     this.vaultService.shareSecret({
-      secretId: secret.id,             // za kasnije dohvat owner-a
+      secretId: secret.id,             
       sharedWithUserId: developer.id,
       encryptedBlob: encrypted.encryptedSecret,
       iv: encrypted.iv,

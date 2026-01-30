@@ -74,13 +74,11 @@ export class DeveloperComponent {
 
   async decrypt(secret: SharedSecretResponse & { decrypted?: string }) {
     try {
-      // 1. Dohvati privatni ključ korisnika
       const masterPassword = prompt('Enter your master password:');
       if (!masterPassword) return;
 
       const privateKey = await this.cryptoService.loadPrivateKey(masterPassword);
 
-      // 2. Dekripcija simetričnog ključa (RSA-OAEP)
       const symmetricKeyRaw = await crypto.subtle.decrypt(
         { name: 'RSA-OAEP' },
         privateKey,
@@ -95,7 +93,6 @@ export class DeveloperComponent {
         ['decrypt']
       );
 
-      // 3. Dekripcija same tajne (AES-GCM)
       const decrypted = await crypto.subtle.decrypt(
         {
           name: 'AES-GCM',

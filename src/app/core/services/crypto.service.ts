@@ -155,7 +155,6 @@ export class CryptoService {
 
   //ASYM
   private async generateAsymmetricKeys(masterPassword: string): Promise<void> {
-    // 1. Generiši RSA ključ par
     const keyPair = await crypto.subtle.generateKey(
       {
         name: 'RSA-OAEP',
@@ -167,15 +166,12 @@ export class CryptoService {
       ['encrypt', 'decrypt']
     );
 
-    // 2. Exportuj ključeve
     const publicKeyRaw = await crypto.subtle.exportKey('spki', keyPair.publicKey);
     const privateKeyRaw = await crypto.subtle.exportKey('pkcs8', keyPair.privateKey);
 
-    // 3. Deriviraj novi KEK iz master password (za privatni ključ)
     const salt = crypto.getRandomValues(new Uint8Array(16)); // novi salt
     const kek = await this.deriveKey(masterPassword, salt);
 
-    // 4. Enkripcija privatnog ključa
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const encryptedPrivate = await crypto.subtle.encrypt(
       { name: 'AES-GCM', iv },
@@ -183,7 +179,6 @@ export class CryptoService {
       privateKeyRaw
     );
 
-    // 5. Spremi u localStorage
     localStorage.setItem(this.key(this.ASYM_PUBLIC_KEY), this.toBase64(publicKeyRaw));
     localStorage.setItem(
       this.key(this.ASYM_PRIVATE_KEY),
@@ -196,7 +191,6 @@ export class CryptoService {
   }
 
   async loadPrivateKey(masterPassword: string): Promise<CryptoKey> {
-    // Učitaj enkriptovani privatni ključ iz localStorage
     const encryptedJson = localStorage.getItem(this.key(this.ASYM_PRIVATE_KEY));
     if (!encryptedJson) {
       throw new Error('Encrypted private key not found in localStorage');
@@ -208,13 +202,10 @@ export class CryptoService {
       throw new Error('Encrypted private key is missing required fields (blob, iv, salt)');
     }
 
-    // Dohvati salt iz samog JSON-a
     const salt = this.fromBase64(encrypted.salt);
 
-    // Kreiraj KEK iz master password-a i salt-a
     const kek = await this.deriveKey(masterPassword, salt);
 
-    // Dekripcija privatnog ključa (AES-GCM)
     const decrypted = await crypto.subtle.decrypt(
       {
         name: 'AES-GCM',
@@ -224,7 +215,6 @@ export class CryptoService {
       this.toArrayBuffer(this.fromBase64(encrypted.blob))
     );
 
-    // Importuj privatni ključ (RSA-OAEP) za dekripciju simetričnih ključeva
     return crypto.subtle.importKey(
       'pkcs8',
       decrypted,
@@ -239,14 +229,12 @@ export class CryptoService {
     iv: string;
     encryptedSymmetricKey: string;
   }> {
-    // 1. Kreiraj simetrični ključ
     const symmetricKey = await crypto.subtle.generateKey(
       { name: 'AES-GCM', length: 256 },
       true,
       ['encrypt', 'decrypt']
     );
 
-    // 2. Enkripcija same tajne
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const encoded = new TextEncoder().encode(plaintext);
     const encryptedSecret = await crypto.subtle.encrypt(
@@ -255,7 +243,6 @@ export class CryptoService {
       encoded
     );
 
-    // 3. Importuj javni ključ developera
     const publicKey = await crypto.subtle.importKey(
       'spki',
       this.toArrayBuffer(this.fromBase64(publicKeyBase64)),
@@ -264,7 +251,6 @@ export class CryptoService {
       ['encrypt']
     );
 
-    // 4. Export simetričnog ključa i enkripcija RSA-OAEP
     const symmetricKeyRaw = await crypto.subtle.exportKey('raw', symmetricKey);
     const encryptedSymmetricKey = await crypto.subtle.encrypt(
       { name: 'RSA-OAEP' },

@@ -32,9 +32,9 @@ export class VaultService {
   shareSecret(payload: {
     secretId: number;
     sharedWithUserId: number;
-    encryptedBlob: string;            // AES-GCM enkriptovana tajna
-    iv: string;                        // IV za AES-GCM enkripciju tajne
-    encryptedSymmetricKey: string;     // RSA-OAEP enkriptovani simetrični ključ
+    encryptedBlob: string;            
+    iv: string;                        
+    encryptedSymmetricKey: string;     
   }) {
       return this.http.post(`${this.API_BASE}/team-lead/share`, payload, { withCredentials: true });
   }
